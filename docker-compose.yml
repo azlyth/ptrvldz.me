@@ -1,0 +1,35 @@
+version: '2'
+
+services:
+  nginx-proxy:
+    image: jwilder/nginx-proxy:0.4.0
+    container_name: nginx-proxy
+    ports:
+      - "80:80"
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+    environment:
+      - DEFAULT_HOST=ptrvldz.me
+
+  blog:
+    image: ghost:0.11
+    container_name: blog
+    volumes:
+      - ghost:/var/lib/ghost
+    environment:
+      - VIRTUAL_HOST=ptrvldz.me
+
+  git:
+    image: gogs/gogs:0.9.97
+    container_name: git
+    volumes:
+      - gogs:/data
+    environment:
+      - VIRTUAL_HOST=git.ptrvldz.me
+      - VIRTUAL_PORT=3000
+
+volumes:
+  ghost:
+    external: false
+  gogs:
+    external: false

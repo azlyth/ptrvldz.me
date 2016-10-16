@@ -6,10 +6,24 @@ services:
     container_name: nginx-proxy
     ports:
       - "80:80"
+      - "443:443"
     volumes:
+      - certs:/etc/nginx/certs:ro
+      - /etc/nginx/conf.d
+      - /etc/nginx/vhost.d
+      - /usr/share/nginx/html
       - /var/run/docker.sock:/tmp/docker.sock:ro
     environment:
       - DEFAULT_HOST=ptrvldz.me
+
+  letsencrypt-nginx-proxy:
+    image: jrcs/letsencrypt-nginx-proxy-companion
+    container_name: letsencrypt-nginx-proxy
+    volumes_from:
+      - nginx-proxy
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - certs:/etc/nginx/certs:rw
 
   blog:
     image: ghost:0.11
@@ -18,6 +32,8 @@ services:
       - ghost:/var/lib/ghost
     environment:
       - VIRTUAL_HOST=ptrvldz.me
+      - LETSENCRYPT_HOST=ptrvldz.me
+      - LETSENCRYPT_EMAIL=webmaster@ptrvldz.me
 
   git:
     image: gogs/gogs:0.9.97
@@ -27,9 +43,13 @@ services:
     environment:
       - VIRTUAL_HOST=git.ptrvldz.me
       - VIRTUAL_PORT=3000
+      - LETSENCRYPT_HOST=git.ptrvldz.me
+      - LETSENCRYPT_EMAIL=webmaster@ptrvldz.me
 
 volumes:
   ghost:
     external: false
   gogs:
+    external: false
+  certs:
     external: false

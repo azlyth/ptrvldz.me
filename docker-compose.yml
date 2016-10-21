@@ -1,10 +1,12 @@
 version: '2'
 
+
 services:
 
   nginx-proxy:
     image: jwilder/nginx-proxy:0.4.0
     container_name: nginx-proxy
+    restart: always
     ports:
       - "80:80"
       - "443:443"
@@ -20,15 +22,29 @@ services:
   letsencrypt-nginx-proxy:
     image: jrcs/letsencrypt-nginx-proxy-companion
     container_name: letsencrypt-nginx-proxy
+    restart: always
     volumes_from:
       - nginx-proxy
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - certs:/etc/nginx/certs:rw
 
+  backups:
+    image: ptrvldz/s3-backup:0.1
+    container_name: backups
+    restart: always
+    volumes:
+      - ghost:/backups/ptrvldz-backups/ghost-blog
+      - gogs:/backups/ptrvldz-backups/gogs
+    environment:
+      - AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+      - AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
+      - AWS_DEFAULT_REGION=$AWS_DEFAULT_REGION
+
   blog:
     image: ghost:0.11.2
     container_name: blog
+    restart: always
     volumes:
       - ghost:/var/lib/ghost
     environment:
@@ -39,6 +55,7 @@ services:
   git:
     image: gogs/gogs:0.9.97
     container_name: git
+    restart: always
     volumes:
       - gogs:/data
     environment:

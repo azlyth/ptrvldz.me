@@ -18,6 +18,8 @@ services:
       - /var/run/docker.sock:/tmp/docker.sock:ro
     environment:
       - DEFAULT_HOST=ptrvldz.me
+    entrypoint: bash
+    command: -c "echo 'client_max_body_size 10m;' > /etc/nginx/conf.d/extra_configuration.conf; /app/docker-entrypoint.sh forego start -r"
 
   letsencrypt-nginx-proxy:
     image: jrcs/letsencrypt-nginx-proxy-companion
